@@ -1,5 +1,0 @@
-[0m[[0mdebug[0m] [0mCopy resource mappings: [0m
-[0m[[0mdebug[0m] [0m	(/home/vagrant/work/scala/biz/play2-hands-on/conf/routes,/home/vagrant/work/scala/biz/play2-hands-on/target/scala-2.11/classes/routes)[0m
-[0m[[0mdebug[0m] [0m	(/home/vagrant/work/scala/biz/play2-hands-on/conf/logback.xml,/home/vagrant/work/scala/biz/play2-hands-on/target/scala-2.11/classes/logback.xml)[0m
-[0m[[0mdebug[0m] [0m	(/home/vagrant/work/scala/biz/play2-hands-on/conf/messages,/home/vagrant/work/scala/biz/play2-hands-on/target/scala-2.11/classes/messages)[0m
-[0m[[0mdebug[0m] [0m	(/home/vagrant/work/scala/biz/play2-hands-on/conf/application.conf,/home/vagrant/work/scala/biz/play2-hands-on/target/scala-2.11/classes/application.conf)[0m
