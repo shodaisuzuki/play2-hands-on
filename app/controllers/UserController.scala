@@ -31,6 +31,10 @@ class UserController @Inject()( val dbConfigProvider: DatabaseConfigProvider,
                               ) extends Controller
 with HasDatabaseConfigProvider[JdbcProfile]
 with I18nSupport {
+
+import UserController._
+
+
   /**
    * 一覧表示
    */
@@ -45,7 +49,22 @@ with I18nSupport {
   /**
    * 編集画面表示
    */
-  def edit(id: Option[Long]) = TODO
+  def edit(id: Option[Long]) = Action.async { implicit rs =>
+    val form  = if(id.isDefined) {
+        db.run(Users.filter(t => t.id === id.get.bind).result.head)
+          .map{ user =>
+            userForm.fill(UserForm(Some(user.id), user.name, user.companyId))
+          }
+      } else {
+        Future { userForm }
+      }
+    form.flatMap { form =>
+      db.run(Companies.sortBy(_.id).result)
+        .map { companies =>
+          Ok(views.html.user.edit(form, companies))
+        }
+    }
+  }
 
   /**
    * 登録実行
