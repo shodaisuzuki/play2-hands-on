@@ -69,12 +69,39 @@ import UserController._
   /**
    * 登録実行
    */
-  def create = TODO
+  def create = Action.async { implicit rs =>
+    userForm.bindFromRequest.fold(
+      error => {
+        db.run(Companies.sortBy(t => t.id).result)
+          .map { companies =>
+            BadRequest(views.html.user.edit(error, companies))
+          }
+      },
+      form  => {
+        val user = UsersRow(0, form.name, form.companyId)
+        db.run(Users += user).map { _ => Redirect(routes.UserController.list) }
+      }
+    )
+  }
 
   /**
    * 更新実行
    */
-  def update = TODO
+  def update = Action.async { implicit rs =>
+    userForm.bindFromRequest.fold(
+      error => {
+        db.run(Companies.sortBy(t => t.id).result)
+          .map { companies =>
+            BadRequest(views.html.user.edit(error, companies))
+          }
+      },
+      form => {
+        val user = UsersRow(form.id.get, form.name, form.companyId)
+        db.run(Users.filter(t => t.id === user.id.bind).update(user))
+          .map { _ => Redirect(routes.UserController.list) }
+      }
+    )
+  }
 
   /**
    * 削除実行
