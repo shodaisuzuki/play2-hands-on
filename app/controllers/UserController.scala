@@ -106,7 +106,12 @@ import UserController._
   /**
    * 削除実行
    */
-  def remove(id: Long) = TODO
+  def remove(id: Long) = Action.async { implicit rs =>
+    db.run(Users.filter(t => t.id === id.bind).delete)
+      .map { _ =>
+        Redirect(routes.UserController.list)
+      }
+  }
 
 }
 
