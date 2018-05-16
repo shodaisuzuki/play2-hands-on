@@ -27,6 +27,17 @@ with HasDatabaseConfigProvider[JdbcProfile] {
     }
   }
 
+  // JsonをUsersRowに変換するためのReadsを定義
+  implicit val userFormFormat = new Reads[UserForm]{
+    def reads(js: JsValue): UserForm = {
+      UserForm(
+        id        = (js \ "id"       ).asOpt[Long],
+        name      = (js \ "name"     ).as[String],
+        companyId = (js \ "companyId").asOpt[Int]
+      )
+    }
+  }
+
   /**
    * 一覧表示
    */
