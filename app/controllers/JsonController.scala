@@ -30,7 +30,12 @@ with HasDatabaseConfigProvider[JdbcProfile] {
   /**
    * 一覧表示
    */
-  def list = TODO
+  def list = Action.async { implicit rs =>
+    db.run(Users.sortBy(t => t.id).result)
+      .map { users =>
+        Ok(Json.obj("users" -> users))
+      }
+  }
 
   /**
    * ユーザ登録
