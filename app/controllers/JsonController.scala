@@ -15,27 +15,10 @@ import play.api.libs.functional.syntax._
 
 class JsonController @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends Controller
 with HasDatabaseConfigProvider[JdbcProfile] {
-  
-  // UsersRowをJSONに変換するためのWritesを定義
-  implicit val usersRowWritesFormat = new Writes[UsersRow]{
-    def writes(user: UsersRow): JsValue = {
-      Json.obj(
-        "id"        -> user.id,
-        "name"      -> user.name,
-        "companyId" -> user.companyId
-      )
-    }
-  }
-
   /**
    * 一覧表示
    */
-  def list = Action.async { implicit rs =>
-    db.run(Users.sortBy(t => t.id).result)
-      .map { users =>
-        Ok(Json.obj("users" -> users))
-      }
-  }
+  def list = TODO
 
   /**
    * ユーザ登録
