@@ -69,7 +69,19 @@ with HasDatabaseConfigProvider[JdbcProfile] {
   /**
    * ユーザ更新
    */
-  def update = TODO
+  def update = Action.async(parse.json) { implicit rs =>
+    rs.body.validate[UserForm].map { form =>
+      val user = UsersRow(form.id.get, form.name, form.companyId)
+      db.run(Users.filter(t => t.id === user.id.bind).update(user))
+        .map { _ =>
+          Ok(Json.obj("result" -> "success"))
+        }
+    }.recoverTotal { e => 
+      Future {
+        BadRequest(Json.obj("result" ->"failure", "error" -> JsError.toJson(e)))
+      }
+    }
+  }
 
   /**
    * ユーザ削除
