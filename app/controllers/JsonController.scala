@@ -86,5 +86,11 @@ with HasDatabaseConfigProvider[JdbcProfile] {
   /**
    * ユーザ削除
    */
-  def remove(id: Long) = TODO
+  def remove(id: Long) = Action.async { implicit rs =>
+  
+    db.run(Users.filter(t => t.id === id.bind).delete)
+      .map { _ =>
+        Ok(Json.obj("result" -> "success"))
+      }
+  }
 }
