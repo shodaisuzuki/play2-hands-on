@@ -13,30 +13,30 @@ import slick.driver.H2Driver.api._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-class JsonController @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends Controller
-with HasDatabaseConfigProvider[JdbcProfile] {
+object JsonController {
+
+  // ユーザ情報を受け取るためのケースクラス
+  case class UserForm(id: Option[Long], name: String, companyId: Option[Int])
 
   // UsersRowをJSONに変換するためのWritesを定義
-  implicit val usersRowWritesFormat = new Writes[UsersRow]{
-    def writes(user: UsersRow): JsValue = {
-      Json.obj(
-        "id"        -> user.id,
-        "name"      -> user.name,
-        "companyId" -> user.companyId
-      )
-    }
-  }
+  implicit val usersRowWritesWrites = (
+    (__ \ "id"       ).write[Long]   and
+    (__ \ "name"     ).write[String] and
+    (__ \ "companyId").writeNullable[Int]
+  )(unlift(UsersRow.unapply))
 
-  // JsonをUsersRowに変換するためのReadsを定義
-  implicit val userFormFormat = new Reads[UserForm]{
-    def reads(js: JsValue): UserForm = {
-      UserForm(
-        id        = (js \ "id"       ).asOpt[Long],
-        name      = (js \ "name"     ).as[String],
-        companyId = (js \ "companyId").asOpt[Int]
-      )
-    }
-  }
+  // JSONをUserFormに変換するためのReadsを定義
+  implicit val userFormReads = (
+    (__ \ "id"       ).readNullable[Long] and
+    (__ \ "name"     ).read[String]       and
+    (__ \ "companyId").readNullable[Int]
+  )(UserForm)
+
+}
+
+class JsonController @Inject()(val dbConfigProvider: DatabaseConfigProvider) extends Controller
+with HasDatabaseConfigProvider[JdbcProfile] {
+  import JsonController._
 
   /**
    * 一覧表示
@@ -51,7 +51,20 @@ with HasDatabaseConfigProvider[JdbcProfile] {
   /**
    * ユーザ登録
    */
-  def create = TODO
+    def create = Action.async(parse.json) { implicit rs =>
+      rs.body.validate[UserForm].map { form =>
+        // OKの場合はユーザを登録
+        val user = UsersRow(0, form.name, form.companyId)
+        db.run(Users += user).map { _ =>
+          Ok(Json.obj("result" -> "success"))
+        }
+      }.recoverTotal { e =>
+        // NGの場合はバリデーションエラーを返す
+        Future {
+          BadRequest(Json.obj("result" ->"failure", "error" -> JsError.toJson(e)))
+        }
+      }
+    }
 
   /**
    * ユーザ更新
