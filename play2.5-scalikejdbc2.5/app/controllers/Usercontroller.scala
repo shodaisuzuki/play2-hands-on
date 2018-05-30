@@ -36,9 +36,8 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller
     DB.readOnly { implicit session =>
       val users = withSQL {
         select.from(Users as u).orderBy(u.id.asc)
-      }.map(Users(u.resultName))
-       .list
-       .apply()
+      }.map(Users(u.resultName)).list.apply()
+
       Ok(views.html.user.list(users))
     }
   }
