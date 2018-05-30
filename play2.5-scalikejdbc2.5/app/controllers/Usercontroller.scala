@@ -67,7 +67,19 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller 
   /**
    * 登録実行
    */
-  def create = TODO
+  def create = Action { implicit request =>
+    DB.localTx { implicit session =>
+      userForm.bindFromRequest.fold(
+        error => {
+          BadRequest(views.html.user.edit(error, Companies.findAll()))
+        },
+        form => {
+          Users.create(form.name, form.companyId)
+          Redirect(routes.UserController.list)
+        }
+      )
+    }
+  }
 
   /**
    * 更新実行
