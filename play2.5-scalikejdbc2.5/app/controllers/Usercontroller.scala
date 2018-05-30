@@ -46,7 +46,24 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller
   /**
    * 編集画面表示
    */
-  def edit(id: Option[Long]) = TODO
+  def edit(id: Option[Long]) = Action { implicit request =>
+    val c = Companies.syntax("c")
+
+    DB.readOnly { implicit session =>
+      val form = id match {
+        case Some(id) => {
+          val user = Users.find(id).get
+          userForm.fill(UserForm(Some(user.id),user.name,user.companyId))
+        }
+        case None => userForm
+      }
+      val companies = withSQL {
+        select.from(Companies as c).orderBy(c.id.asc)
+      }.map(Companies(c.resutName)).list.apply()
+      
+      Ok(views.html.user.edit(form, companies))
+    }
+  }
 
   /**
    * 登録実行
