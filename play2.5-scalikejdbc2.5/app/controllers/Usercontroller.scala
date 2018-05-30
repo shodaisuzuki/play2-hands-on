@@ -84,7 +84,21 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller 
   /**
    * 更新実行
    */
-  def update = TODO
+  def update = Action { implicit request =>
+    DB.localTx { implicit session =>
+      userForm.bindFromRequest.fold(
+        error => {
+          BadRequest(views.html.user.edit(error, Companies.findAll()))
+        },
+        form => {
+          Users.find(form.id.get).foreach { user =>
+            Users.save(user.copy(name = form.name, companyId = form.companyId))
+          }
+          Redirect(routes.UserController.list)
+        }
+      )
+    }
+  }
 
   /**
    * 削除実行
