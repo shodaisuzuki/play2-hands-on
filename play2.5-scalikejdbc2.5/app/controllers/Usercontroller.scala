@@ -103,6 +103,13 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller 
   /**
    * 削除実行
    */
-  def remove(id: Long) = TODO
-
+  def remove(id: Long) = Action { implicit request =>
+    DB.localTx { implicit session =>
+      // IDが一意ならfindとforeachはいらないはず
+      Users.find(id).foreach { user =>
+        Users.destroy(user)
+      }
+      Redirect(routes.UserController.list)
+    }
+  }
 }
