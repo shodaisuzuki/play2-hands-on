@@ -24,8 +24,8 @@ object UserController {
 
 }
 
-class UserController @Inject()(val messagesApi: MessagesApi) extends Controller
-    with I18nSupport {
+class UserController @Inject()(val messagesApi: MessagesApi) extends Controller with I18nSupport {
+  import UserController._
 
   /**
    * 一覧表示
@@ -58,7 +58,7 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller
       }
       val companies = withSQL {
         select.from(Companies as c).orderBy(c.id.asc)
-      }.map(Companies(c.resutName)).list.apply()
+      }.map(Companies(c.resultName)).list().apply()
       
       Ok(views.html.user.edit(form, companies))
     }
