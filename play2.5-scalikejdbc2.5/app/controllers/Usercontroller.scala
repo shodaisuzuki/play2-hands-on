@@ -14,7 +14,18 @@ class UserController @Inject()(val messagesApi: MessagesApi) extends Controller
   /**
    * 一覧表示
    */
-  def list = TODO
+  def list = Action { implicit request =>
+    val u = Users.syntax("u")
+    
+    DB.readOnly { implicit session =>
+      val users = withSQL {
+        select.from(Users as u).orderBy(u.id.asc)
+      }.map(Users(u.resultName))
+       .list
+       .apply()
+      Ok(views.html.user.list(users))
+    }
+  }
 
   /**
    * 編集画面表示
