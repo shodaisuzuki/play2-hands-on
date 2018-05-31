@@ -7,14 +7,15 @@ import scalikejdbc._
 import models._
 
 object JsonController {
-  // UsersをJSONに変換するためのWritesを定義
-  implicit val usersWrites = (
+  // UsersRowをJSONに変換するためのWritesを定義
+  implicit val usersRowWritesWrites = (
     (__ \ "id"       ).write[Long]   and
     (__ \ "name"     ).write[String] and
     (__ \ "companyId").writeNullable[Int]
   )(unlift(Users.unapply))
 
-  1// ユーザ情報を受け取るためのケースクラス
+
+  // ユーザ情報を受け取るためのケースクラス
   case class UserForm(id: Option[Long], name: String, companyId: Option[Int])
 
   // JSONをUserFormに変換するためのReadsを定義
@@ -23,7 +24,6 @@ object JsonController {
     (__ \ "name"     ).read[String]       and
     (__ \ "companyId").readNullable[Int]
   )(UserForm)
-
 }
 
 class JsonController extends Controller {
@@ -47,7 +47,18 @@ class JsonController extends Controller {
   /**
    * ユーザ登録
    */
-  def create = TODO
+  def create = Action(parse.json) {implicit request =>
+    request.body.validate[UserForm].map { form =>
+      // OKの場合はユーザを登録
+      DB.localTx { implicit session =>
+        Users.create(form.name, form.companyId)
+        Ok(Json.obj("result" -> "success"))
+      }
+    }.recoverTotal { e =>
+      // NGの場合はバリデーションエラーを返す
+      BadRequest(Json.obj("result" ->"failure", "error" -> JsError.toJson(e)))
+    }
+  }
 
   /**
    * ユーザ更新
