@@ -21,7 +21,17 @@ class JsonController extends Controller {
   /**
    * 一覧表示
    */
-  def list = TODO
+  def list = Action { implicit request =>
+    val u = Users.syntax("u")
+
+    DB.readOnly { implicit session =>
+      val users = withSQL {
+        select.from(Users as u).orderBy(u.id.asc)
+      }.map(Users(u.resultName)).list.apply()
+
+      Ok(Json.obj("users" -> users))
+    }
+  }
 
   /**
    * ユーザ登録
