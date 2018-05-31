@@ -13,6 +13,17 @@ object JsonController {
     (__ \ "name"     ).write[String] and
     (__ \ "companyId").writeNullable[Int]
   )(unlift(Users.unapply))
+
+  1// ユーザ情報を受け取るためのケースクラス
+  case class UserForm(id: Option[Long], name: String, companyId: Option[Int])
+
+  // JSONをUserFormに変換するためのReadsを定義
+  implicit val userFormFormat = (
+    (__ \ "id"       ).readNullable[Long] and
+    (__ \ "name"     ).read[String]       and
+    (__ \ "companyId").readNullable[Int]
+  )(UserForm)
+
 }
 
 class JsonController extends Controller {
