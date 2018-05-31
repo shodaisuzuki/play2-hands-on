@@ -79,5 +79,12 @@ class JsonController extends Controller {
   /**
    * ユーザ削除
    */
-  def remove(id: Long) = TODO
+  def remove(id: Long) = Action(parse.json) { implicit request =>
+    DB.localTx { implicit session =>
+      Users.find(id).foreach { user =>
+        Users.destroy(user)
+      }
+      Ok(Json.obj("result" -> "success"))
+    }
+  }
 }
