@@ -63,7 +63,18 @@ class JsonController extends Controller {
   /**
    * ユーザ更新
    */
-  def update = TODO
+  def update = Action(parse.json) { implicit request =>
+    request.body.validate[UserForm].map { form =>
+      DB.localTx { implicit session =>
+        Users.find(form.id.get).foreach { user =>
+          Users.save(user.copy(name = user.name, companyId = user.companyId))
+        }
+        Ok(Json.obj("result" -> "success"))
+      }
+    }.recoverTotal { e =>
+      BadRequest(Json.obj("result" ->"failure", "error" -> JsError.toJson(e)))
+    }
+  }
 
   /**
    * ユーザ削除
