@@ -6,7 +6,17 @@ import play.api.libs.functional.syntax._
 import scalikejdbc._
 import models._
 
+object JsonController {
+  // UsersをJSONに変換するためのWritesを定義
+  implicit val usersWrites = (
+    (__ \ "id"       ).write[Long]   and
+    (__ \ "name"     ).write[String] and
+    (__ \ "companyId").writeNullable[Int]
+  )(unlift(Users.unapply))
+}
+
 class JsonController extends Controller {
+  import JsonController._
 
   /**
    * 一覧表示
